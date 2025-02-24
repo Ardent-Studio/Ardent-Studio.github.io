@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ardent Studios - Developer Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+        
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #60a5fa;
+            --primary-dark: #2563eb;
+            --accent: #8b5cf6;
+            --dark-bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #334155;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .auth-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .auth-box {
+            background-color: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .auth-box h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+        
+        .auth-box img {
+            width: 80px;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+        }
+        
+        .auth-box p {
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+        
+        #access-code {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: rgba(15, 23, 42, 0.7);
+            color: var(--text-primary);
+            transition: border-color 0.3s;
+        }
+        
+        #access-code:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+        
+        #access-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        
+        #access-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        #error-msg {
+            color: var(--danger);
+            margin-top: 1rem;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .dashboard {
+            display: none;
+        }
+        
+        header {
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo img {
+            width: 40px;
+            border-radius: 8px;
+        }
+        
+        .logo h1 {
+            color: var(--primary-light);
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        nav ul li a {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+        
+        nav ul li a:hover {
+            color: var(--text-primary);
+        }
+        
+        nav ul li a.active {
+            color: var(--primary-light);
+        }
+        
+        nav ul li a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+            border-radius: 2px;
+        }
+        
+        .container {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        
+        .welcome-banner {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            margin-bottom: 2.5rem;
+            border: 1px solid var(--border);
+            background-image: linear-gradient(to right, rgba(30, 41, 59, 0.8), rgba(30, 41, 59, 0.8)), url("/api/placeholder/1200/300");
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .welcome-banner h2 {
+            margin-bottom: 0.75rem;
+            color: var(--primary-light);
+            font-weight: 600;
+            font-size: 1.75rem;
+        }
+        
+        .welcome-banner p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header h2 {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .view-all {
+            color: var(--primary-light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .view-all:hover {
+            color: var(--primary);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-header h3 {
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+        
+        .badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
+        .badge-warning {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .badge-danger {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .card-body {
+            padding: 1.25rem;
+        }
+        
+        .info-item {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+        
+        .info-item span:first-child {
+            font-weight: 500;
+            width: 120px;
+            color: var(--text-secondary);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: rgba(148, 163, 184, 0.2);
+            border-radius: 4px;
+            margin: 0.5rem 0 1.25rem;
+            overflow: hidden;
+        }
+        
+        .progress-value {
+            height: 100%;
+            border-radius: 4px;
+            background-image: linear-gradient(to right, var(--primary-dark), var(--primary-light));
+        }
+        
+        .team {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .team-member {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: var(--primary-light);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            transition: all 0.3s;
+        }
+        
+        .team-member:hover {
+            background-color: rgba(59, 130, 246, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .links-section {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+        
+        .links-section h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary-light);
+            font-weight: 600;
+        }
+        
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+        
+        .link-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            height: 150px;
+            border-radius: 12px;
+            background-color: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary-dark), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            border-color: var(--primary-dark);
+        }
+        
+        .link-card:hover::before {
+            opacity: 0.1;
+        }
+        
+        .link-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-light);
+            z-index: 2;
+        }
+        
+        .link-card span {
+            font-weight: 500;
+            z-index: 2;
+        }
+        
+        footer {
+            background-color: var(--card-bg);
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: 3rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+        }
+        
+        @media (max-width: 768px) {
+            nav {
+                display: none;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Authentication Overlay -->
+    <div class="auth-container" id="auth-container">
+        <div class="auth-box">
+            <img src="/api/placeholder/80/80" alt="Ardent Studios Logo">
+            <h2>Ardent Studios Portal</h2>
+            <p>Enter your access code to continue</p>
+            <input type="password" id="access-code" placeholder="Access Code">
+            <button id="access-btn">Access Dashboard</button>
+            <p id="error-msg">Invalid access code. Please try again.</p>
+        </div>
+    </div>
+
+    <!-- Dashboard (initially hidden) -->
+    <div class="dashboard" id="dashboard">
+        <header>
+            <div class="logo">
+                <img src="/api/placeholder/40/40" alt="Ardent Studios Logo">
+                <h1>Ardent Studios</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="active">Dashboard</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="container">
+            <div class="welcome-banner">
+                <h2>Welcome to the Developer Dashboard</h2>
+                <p>Track projects, connect with team members, and access resources all in one place.</p>
+            </div>
+
+            <div class="section-header">
+                <h2>Active Projects</h2>
+                <a href="#" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+            </div>
+            
+            <div class="grid">
+                <!-- Project 1 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Food Hunt/h3>
+                        <span class="badge badge-success">Active</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-item">
+                            <span>Status:</span>
+                            <span>Active Development</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Release Date:</span>
+                            <span>Unknown</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Lead:</span>
+                            <span>Sarah Chen</span>
+                        </div>
+                        <div class="info-item">
+                            <span>Completion:</span>
+                            <span>10%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-value" style="width: 10%"></div>
+                        </div>
+                        <div class="info-item">
+                            <span>Team:</span>
+                        </div>
+                        <div class="team">
+                            <span class="team-member">2K2SO</span>
+                            <span class="team-member">ItsKayzen</span>
+                            <span class="team-member">Nailets</span>
+                            <span class="team-member">Sauce</span>
+                            <span class="team-member">Xiny</span>
+                            <span class="team-member">Dev_Didi</span>
+                            <span class="team-member">Gtn...</span>
+                            <span class="team-member">Skydie</span>
+                            <span class="team-member">Manoz</span>
+                            <span class="team-member">Babayou</span>
+                            <span class="team-member">More on discord...</span>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="links-section">
+                <h2>Quick Links</h2>
+                <div class="links-grid">
+                    <a href="https://www.roblox.com/fr/communities/35525635/Ardent-Studio#!/about" class="link-card">
+                        <i class="fas fa-code-branch"></i>
+                        <span>Roblox Group</span>
+                    </a>
+                    <a href="https://discord.gg/JhMZBp9AMr" class="link-card">
+                        <i class="fab fa-discord"></i>
+                        <span>Discord Server</span>
+                    </a>
+                    <a href="#" class="link-card">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Documentation // UNAVAILABLE</span>
+                    </a>
+                    <a href="#" class="link-card">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Release Schedule // UNAVAILABLE</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2025 Ardent Studios. All rights reserved. // Made by ItsKayzen</p>
+        </footer>
+    </div>
+
+    <script>
+        // The access code (you can modify this)
+        const correctCode = "Ardent-DEVCODE";
+        
+        document.getElementById('access-btn').addEventListener('click', function() {
+            const enteredCode = document.getElementById('access-code').value;
+            
+            if (enteredCode === correctCode) {
+                // Hide auth container and show dashboard
+                document.getElementById('auth-container').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } else {
+                // Show error message
+                document.getElementById('error-msg').style.display = 'block';
+                // Clear the input field
+                document.getElementById('access-code').value = '';
+            }
+        });
+        
+        // Also allow Enter key to submit
+        document.getElementById('access-code').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('access-btn').click();
+            }
+        });
+    </script>
+</body>
+</html>
